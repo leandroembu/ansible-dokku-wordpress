@@ -1,0 +1,8 @@
+---
+app_name: wordpress
+mariadb_service_name: "mariadb_{{ app_name }}"
+app_domain: "wordpress.example.com"
+admin_email: "admin@example.com"
+data_path: "/var/lib/dokku/data/storage/{{ app_name }}"
+
+app_docroot: "/var/www/html/"

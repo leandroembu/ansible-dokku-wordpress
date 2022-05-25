@@ -1,0 +1,70 @@
+---
+- name: Create app
+  dokku_app:
+    app: "{{ app_name }}"
+
+- name: Disable the zero downtime deployment
+  dokku_checks:
+    app: "{{ app_name }}"
+    state: absent
+
+- name: domains:add "{{ app_name }}" "{{ app_domain }}"
+  dokku_domains:
+    app: "{{ app_name }}"
+    domains:
+      - "{{ app_domain }}"
+
+- name: environment configuration
+  dokku_config:
+    app: "{{ app_name }}"
+    config:
+      DOKKU_LETSENCRYPT_EMAIL: "{{ admin_email }}"
+
+- name: mariadb:create "{{ mariadb_service_name }}"
+  dokku_service_create:
+    name: "{{ mariadb_service_name }}"
+    service: mariadb
+
+- name: mariadb:link "{{ mariadb_service_name }}" "{{ app_name }}"
+  dokku_service_link:
+    app: "{{ app_name }}"
+    name: "{{ mariadb_service_name }}"
+    service: mariadb
+
+- name: Copy dump.sql
+  copy:
+    src: database-dumps/dump.sql
+    dest: "/tmp/dump.sql"
+
+- name: Import database dump
+  shell: "dokku mariadb:import {{ mariadb_service_name }} < /tmp/dump.sql"
+
+- name: Get MariaDB environment variables to config WordPress
+  script: ../scripts/mariadb_get_envvars.sh "{{ app_name }}"
+
+- name: Pull and deploy Wordpress
+  dokku_image:
+    app: "{{ app_name }}"
+    image: wordpress:latest
+
+- name: Mount volume paths
+  dokku_storage:
+    app: "{{ app_name }}"
+    mounts:
+      - "{{ data_path }}/{{ item }}:{{ app_docroot }}/wp-content/{{ item }}"
+    create_host_dir: true
+  loop:
+    - plugins
+    - uploads
+    - themes
+
+- name: Copy wp-content files
+  copy:
+    src: wordpress-config/wp-content/
+    dest: "{{ data_path }}"
+    owner: www-data
+    group: www-data
+    mode: u=rw,g=r,o=r
+
+- name: Restart Wordpress app
+  shell: "dokku ps:restart {{ app_name }}"
