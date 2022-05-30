@@ -8,6 +8,7 @@ Deploy Wordpress on Debian servers using Dokku. This role is powered by [dokku/a
 - [x] Copy and import database dump
 - [x] Set environment variables to skip WP installation page after site migration
 - [ ] Create a custom php.ini to set some limits
+- [ ] Use Dockerfile instead of Docker image
 
 ## Requirements
 
@@ -58,8 +59,6 @@ Deploy Wordpress on Debian servers using Dokku. This role is powered by [dokku/a
         url: https://github.com/dokku/dokku-mariadb.git
       - name: letsencrypt
         url: https://github.com/dokku/dokku-letsencrypt.git
-      - name: copy-files-to-image
-        url: https://github.com/dokku/dokku-copy-files-to-image.git
 ```
 
 License
