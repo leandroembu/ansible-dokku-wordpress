@@ -42,10 +42,16 @@
 - name: Get MariaDB environment variables to config WordPress
   script: ../scripts/mariadb_get_envvars.sh "{{ app_name }}"
 
-- name: Pull and deploy Wordpress
-  dokku_image:
+- name: Overriding the auto-selected builder
+  dokku_builder:
     app: "{{ app_name }}"
-    image: wordpress:latest
+    property: selected
+    value: dockerfile
+
+#- name: Pull and deploy Wordpress
+#  dokku_image:
+#    app: "{{ app_name }}"
+#    image: wordpress:latest
 
 - name: Mount volume paths
   dokku_storage:
